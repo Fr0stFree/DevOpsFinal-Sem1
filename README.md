@@ -39,3 +39,5 @@ chmod +x scripts/test.sh
 me@frostfree.ru
 или 
 https://t.me/fr0stfree
+
+https://github.com/Fr0stFree/DevOpsFinal-Sem1
