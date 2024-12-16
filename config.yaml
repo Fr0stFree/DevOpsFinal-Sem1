@@ -1,0 +1,11 @@
+server:
+  port: 8080
+  read-timeout: 60
+  write-timeout: 60
+
+db:
+  port: 5432
+  host: "localhost"
+  password: "val1dat0r"
+  user: "validator"
+  name: "project-sem-1"

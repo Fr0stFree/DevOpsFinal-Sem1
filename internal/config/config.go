@@ -3,20 +3,22 @@ package config
 import (
 	"log"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
 type ServerConfig struct {
-	Port         int
-	ReadTimeout  time.Duration
-	WriteTimeout time.Duration
+	Port         int           `yaml:port`
+	ReadTimeout  time.Duration `yaml:read-timeout`
+	WriteTimeout time.Duration `yaml:write-timeout`
 }
 
 type DBConfig struct {
-	Host     string
-	Port     int
-	User     string
-	Password string
-	Name     string
+	Host     string `yaml:port`
+	Port     int    `yaml:host`
+	User     string `yaml:user`
+	Password string `yaml:password`
+	Name     string `yaml:name`
 }
 
 type Config struct {
@@ -24,20 +26,17 @@ type Config struct {
 	DB     DBConfig
 }
 
-func Load() Config {
-	log.Println("loading configuration...")
-	return Config{
-		Server: ServerConfig{
-			Port:         8080,
-			ReadTimeout:  10 * time.Second,
-			WriteTimeout: 10 * time.Second,
-		},
-		DB: DBConfig{
-			Host:     "localhost",
-			Port:     5432,
-			Password: "val1dat0r",
-			User:     "validator",
-			Name:     "project-sem-1",
-		},
+func Load(path, fmt string) (Config, error) {
+	log.Printf("loading configuration from '%s'\n", path)
+	viper.SetConfigFile(path)
+	viper.SetConfigType(fmt)
+	if err := viper.ReadInConfig(); err != nil {
+		return Config{}, err
 	}
+	var config Config
+	if err := viper.Unmarshal(&config); err != nil {
+		return Config{}, err
+	}
+	log.Println("configuration loaded successfully")
+	return config, nil
 }

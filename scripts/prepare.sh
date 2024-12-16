@@ -16,7 +16,7 @@ COMPILE_FROM="cmd/main.go"
 export PGPASSWORD=$DB_PASSWORD
 
 echo -e "${YELLOW}Создание таблицы prices...${NC}"
-psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -f migrations/0001_create_prices.sql &> /dev/null
+psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -f migrations/0001_create_prices.sql
 if [ $? -ne 0 ]; then
   echo -e "${RED}Ошибка при создании таблицы prices${NC}"
   exit 1

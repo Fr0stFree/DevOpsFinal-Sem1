@@ -35,6 +35,9 @@ func New(config config.Config) *App {
 }
 
 func (app *App) Run() {
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
 	go func() {
 		log.Printf("starting server on %s...\n", app.server.Addr)
 		err := app.server.ListenAndServe()
@@ -42,11 +45,8 @@ func (app *App) Run() {
 			log.Fatalf("server has failed with %s", err)
 		}
 	}()
-
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	
 	<-quit
-
 	log.Println("shutting down server...")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
