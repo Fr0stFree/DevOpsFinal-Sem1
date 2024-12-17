@@ -1,7 +1,7 @@
 package db
 
 import (
-	"fmt"
+	"errors"
 	"time"
 )
 
@@ -16,16 +16,16 @@ type Product struct {
 
 func (p Product) Validate() error {
 	if p.ID < 0 {
-		return fmt.Errorf("id cannot be negative")
+		return errors.New("id cannot be negative")
 	}
 	if p.Name == "" {
-		return fmt.Errorf("name cannot be empty")
+		return errors.New("name cannot be empty")
 	}
 	if p.Category == "" {
-		return fmt.Errorf("category cannot be empty")
+		return errors.New("category cannot be empty")
 	}
 	if p.Price < 0 {
-		return fmt.Errorf("price cannot be negative")
+		return errors.New("price cannot be negative")
 	}
 	return nil
 }

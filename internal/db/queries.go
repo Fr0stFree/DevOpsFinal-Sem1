@@ -3,8 +3,6 @@ package db
 import (
 	"fmt"
 
-	"github.com/lib/pq"
-
 	"project_sem/internal/config"
 )
 
@@ -37,18 +35,6 @@ func (r *repo) CreateProduct(product Product) error {
 		return err
 	}
 	return nil
-}
-
-func IsDuplicateError(err error) bool {
-	if err == nil {
-		return false
-	}
-	if pqErr, ok := err.(*pq.Error); ok {
-		if pqErr.Code == pq.ErrorCode("23505") {
-			return true
-		}
-	}
-	return false
 }
 
 func (r *repo) GetTotalPriceAndUniqueCategories() (float64, int, error) {
