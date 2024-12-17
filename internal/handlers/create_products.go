@@ -19,7 +19,7 @@ type PriceStats struct {
 	TotalPrice      int `json:"total_price"`
 }
 
-func CreatePrices(repo *db.Repository) http.HandlerFunc {
+func CreateProducts(repo *db.Repository) http.HandlerFunc {
 	const errorResponseBody = "failed to upload prices"
 	const successContentType = "application/json"
 
@@ -42,7 +42,7 @@ func CreatePrices(repo *db.Repository) http.HandlerFunc {
 		defer rc.Close()
 
 		stats := PriceStats{}
-		prices, totalCount, err := serializers.DeserializePrices(rc)
+		products, totalCount, err := serializers.DeserializeProducts(rc)
 		if err != nil {
 			log.Printf("failed to parse prices from incoming file: %v\n", err)
 			http.Error(w, errorResponseBody, http.StatusInternalServerError)
@@ -50,8 +50,8 @@ func CreatePrices(repo *db.Repository) http.HandlerFunc {
 		}
 		stats.TotalCount = totalCount
 
-		for _, price := range prices {
-			err = repo.CreatePrice(price)
+		for _, product := range products {
+			err = repo.CreateProduct(product)
 			if err != nil {
 				stats.DuplicateCount++
 			} else {

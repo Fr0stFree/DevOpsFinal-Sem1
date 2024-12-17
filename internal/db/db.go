@@ -4,9 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"project_sem/internal/config"
 
 	_ "github.com/lib/pq"
+
+	"project_sem/internal/config"
 )
 
 type Repository struct {

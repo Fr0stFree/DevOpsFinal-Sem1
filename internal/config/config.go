@@ -8,22 +8,22 @@ import (
 )
 
 type ServerConfig struct {
-	Port         int           `yaml:port`
-	ReadTimeout  time.Duration `yaml:read-timeout`
-	WriteTimeout time.Duration `yaml:write-timeout`
+	Port         int           `yaml:"port"`
+	ReadTimeout  time.Duration `yaml:"read-timeout"`
+	WriteTimeout time.Duration `yaml:"write-timeout"`
 }
 
 type DBConfig struct {
-	Host     string `yaml:port`
-	Port     int    `yaml:host`
-	User     string `yaml:user`
-	Password string `yaml:password`
-	Name     string `yaml:name`
+	Host     string `yaml:"port"`
+	Port     int    `yaml:"host"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
+	Name     string `yaml:"name"`
 }
 
 type Config struct {
-	Server ServerConfig
-	DB     DBConfig
+	Server ServerConfig `yaml:"server"`
+	DB     DBConfig     `yaml:"db"`
 }
 
 func Load(path, fmt string) (Config, error) {
