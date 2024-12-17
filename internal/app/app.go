@@ -15,11 +15,15 @@ import (
 	"project_sem/internal/db"
 )
 
-type App struct {
+type Apper interface {
+	Run()
+}
+
+type app struct {
 	server *http.Server
 }
 
-func New(config config.Config) *App {
+func New(config config.Config) Apper {
 	repo, err := db.NewRepository(config.DB)
 	if err != nil {
 		log.Fatalf("failed to create repository with error %s", err)
@@ -31,16 +35,16 @@ func New(config config.Config) *App {
 		ReadTimeout:  config.Server.ReadTimeout,
 		WriteTimeout: config.Server.WriteTimeout,
 	}
-	return &App{server}
+	return &app{server}
 }
 
-func (app *App) Run() {
+func (a *app) Run() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		log.Printf("starting server on %s...\n", app.server.Addr)
-		err := app.server.ListenAndServe()
+		log.Printf("starting server on %s...\n", a.server.Addr)
+		err := a.server.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("server has failed with %s", err)
 		}
@@ -51,7 +55,7 @@ func (app *App) Run() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := app.server.Shutdown(ctx)
+	err := a.server.Shutdown(ctx)
 	if err != nil {
 		log.Fatalf("server shutdown failed with %s", err)
 	}

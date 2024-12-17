@@ -2,13 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
-	"io"
 	"log"
 	"net/http"
 
 	"project_sem/internal/db"
 	"project_sem/internal/serializers"
-	"project_sem/internal/utils"
+	"project_sem/internal/archivers"
 )
 
 type PriceStats struct {
@@ -19,7 +18,7 @@ type PriceStats struct {
 	TotalPrice      int `json:"total_price"`
 }
 
-func CreateProducts(repo *db.Repository) http.HandlerFunc {
+func CreateProducts(repo db.Repositorier) http.HandlerFunc {
 	const errorResponseBody = "failed to upload prices"
 	const successContentType = "application/json"
 
@@ -32,8 +31,9 @@ func CreateProducts(repo *db.Repository) http.HandlerFunc {
 		}
 		defer file.Close()
 
-		formatType := r.URL.Query().Get("type")
-		rc, err := unarchiveFile(file, formatType)
+		fmt := r.URL.Query().Get("type")
+		archiver := archivers.New(archivers.Format(fmt))
+		rc, err := archiver.Extract(file)
 		if err != nil {
 			log.Printf("failed to unarchive incoming file: %v\n", err)
 			http.Error(w, errorResponseBody, http.StatusInternalServerError)
@@ -49,15 +49,29 @@ func CreateProducts(repo *db.Repository) http.HandlerFunc {
 			return
 		}
 		stats.TotalCount = totalCount
-
+		
+		transaction, err := repo.Begin()
+		defer transaction.Rollback()
 		for _, product := range products {
 			err = repo.CreateProduct(product)
-			if err != nil {
-				stats.DuplicateCount++
-			} else {
+			if err == nil {
 				stats.TotalItems++
+				continue
 			}
+			if db.IsDuplicateError(err) {
+				stats.DuplicateCount++
+				continue
+			} 
+			log.Printf("failed to save product: %v\n", err)
+			http.Error(w, errorResponseBody, http.StatusInternalServerError)
+			return
 		}
+		err = transaction.Commit()
+		if err != nil {
+			log.Printf("failed to commit transaction: %v\n", err)
+			http.Error(w, errorResponseBody, http.StatusInternalServerError)
+		}
+
 		totalPrice, totalCategories, err := repo.GetTotalPriceAndUniqueCategories()
 		if err != nil {
 			log.Printf("failed to get total price and unique categories: %v\n", err)
@@ -73,13 +87,3 @@ func CreateProducts(repo *db.Repository) http.HandlerFunc {
 	}
 }
 
-func unarchiveFile(r io.Reader, fileType string) (io.ReadCloser, error) {
-	switch fileType {
-	case "zip":
-		return utils.UnzipFile(r)
-	case "tar":
-		return utils.UntarFile(r)
-	default:
-		return utils.UnzipFile(r)
-	}
-}

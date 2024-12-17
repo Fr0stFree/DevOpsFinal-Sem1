@@ -30,8 +30,8 @@ chmod +x scripts/run.sh
 для заупуска тестов необходимо выполнить команду:
 
 ```bash
-chmod +x scripts/test.sh
-./scripts/test.sh 3
+chmod +x scripts/tests.sh
+for idx in {1..3}; do ./scripts/tests.sh $idx; done
 ```
 
 ## Контакты

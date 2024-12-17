@@ -6,19 +6,20 @@ import (
 	"strconv"
 	"time"
 
+	"project_sem/internal/config"
 	"project_sem/internal/db"
 	"project_sem/internal/serializers"
-	"project_sem/internal/utils"
+	"project_sem/internal/archivers"
 )
 
-func GetProducts(repo *db.Repository) http.HandlerFunc {
+func GetProducts(repo db.Repositorier) http.HandlerFunc {
 	const errorResponseBody = "failed to load prices"
 	const successContentType = "application/zip"
 	const sucessContentDisposition = "attachment; filename=data.zip"
 	const csvFileName = "data.csv"
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		params, err := buildFilterParams(r)
+		params, err := buildProductsFilter(r)
 		if err != nil {
 			log.Printf("failed to build filter params: %v\n", err)
 			http.Error(w, errorResponseBody, http.StatusBadRequest)
@@ -36,9 +37,17 @@ func GetProducts(repo *db.Repository) http.HandlerFunc {
 			http.Error(w, errorResponseBody, http.StatusInternalServerError)
 			return
 		}
-		err = utils.ZipFile(serializedPrices, w, csvFileName)
+		archiver := archivers.New(archivers.ZipFmt)
+		archive, err := archiver.Archive(w, csvFileName)
 		if err != nil {
 			log.Printf("failed to archive prices: %v\n", err)
+			http.Error(w, errorResponseBody, http.StatusInternalServerError)
+			return
+		}
+		defer archive.Close()
+		_, err = archive.Write(serializedPrices.Bytes())
+		if err != nil {
+			log.Printf("failed to write prices to archive: %v\n", err)
 			http.Error(w, errorResponseBody, http.StatusInternalServerError)
 			return
 		}
@@ -47,12 +56,12 @@ func GetProducts(repo *db.Repository) http.HandlerFunc {
 	}
 }
 
-func buildFilterParams(r *http.Request) (db.FilterParams, error) {
-	params := db.FilterParams{}
+func buildProductsFilter(r *http.Request) (db.ProductsFilter, error) {
+	params := db.ProductsFilter{}
 
 	minCreateDate := r.URL.Query().Get("start")
 	if minCreateDate != "" {
-		minDate, err := time.Parse("2006-01-02", minCreateDate)
+		minDate, err := time.Parse(config.DATE_FORMAT, minCreateDate)
 		if err != nil {
 			return params, err
 		}
@@ -61,7 +70,7 @@ func buildFilterParams(r *http.Request) (db.FilterParams, error) {
 
 	maxCreateDate := r.URL.Query().Get("end")
 	if maxCreateDate != "" {
-		maxDate, err := time.Parse("2006-01-02", maxCreateDate)
+		maxDate, err := time.Parse(config.DATE_FORMAT, maxCreateDate)
 		if err != nil {
 			return params, err
 		}

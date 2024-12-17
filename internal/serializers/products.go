@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"project_sem/internal/db"
+	"project_sem/internal/config"
 )
 
 func SerializeProduct(prices []db.Product) (*bytes.Buffer, error) {
@@ -24,7 +25,7 @@ func SerializeProduct(prices []db.Product) (*bytes.Buffer, error) {
 			price.Name,
 			price.Category,
 			fmt.Sprintf("%.2f", price.Price),
-			price.CreateDate.Format("2006-01-02"),
+			price.CreateDate.Format(config.DATE_FORMAT),
 		}
 		err := csvWriter.Write(record)
 		if err != nil {
@@ -35,7 +36,7 @@ func SerializeProduct(prices []db.Product) (*bytes.Buffer, error) {
 }
 
 func DeserializeProducts(r io.Reader) ([]db.Product, int, error) {
-	prices := make([]db.Product, 0)
+	products := make([]db.Product, 0)
 	csvReader := csv.NewReader(r)
 	records, err := csvReader.ReadAll()
 	if err != nil {
@@ -46,46 +47,39 @@ func DeserializeProducts(r io.Reader) ([]db.Product, int, error) {
 		if idx == 0 {
 			continue
 		}
-		price, err := validateProduct(record)
+		product, err := buildProductFromRecord(record)
 		if err != nil {
-			log.Printf("price conversion failed %v\n", err)
+			log.Printf("product conversion failed %v\n", err)
 			continue
 		}
-		prices = append(prices, price)
+		if err = product.Validate(); err != nil {
+			log.Printf("product validation failed %v\n", err)
+			continue
+		}
+		products = append(products, product)
 	}
-	return prices, totalItems, nil
+	return products, totalItems, nil
 }
 
-func validateProduct(record []string) (db.Product, error) {
-	if len(record) != 5 {
-		return db.Product{}, fmt.Errorf("invalid record %v", record)
-	}
+func buildProductFromRecord(record []string) (db.Product, error) {
+	product := db.Product{}
+
 	id, err := strconv.Atoi(record[0])
 	if err != nil {
 		return db.Product{}, fmt.Errorf("failed to convert id to int %v", err)
 	}
-	name := record[1]
-	if name == "" {
-		return db.Product{}, fmt.Errorf("name cannot be empty")
-	}
-	category := record[2]
-	if category == "" {
-		return db.Product{}, fmt.Errorf("category cannot be empty")
-	}
-	cost, err := strconv.ParseFloat(record[3], 64)
+	product.ID = id
+	product.Name = record[1]
+	product.Category = record[2]
+	price, err := strconv.ParseFloat(record[3], 64)
 	if err != nil {
-		return db.Product{}, fmt.Errorf("failed to convert cost to float %v", err)
+		return db.Product{}, fmt.Errorf("failed to convert price to float %v", err)
 	}
-	create_date, err := time.Parse("2006-01-02", record[4])
+	product.Price = price
+	create_date, err := time.Parse(config.DATE_FORMAT, record[4])
 	if err != nil {
 		return db.Product{}, fmt.Errorf("failed to convert creation date %v", err)
 	}
-	price := db.Product{
-		ID:         id,
-		Name:       name,
-		Category:   category,
-		Price:      cost,
-		CreateDate: create_date,
-	}
-	return price, nil
+	product.CreateDate = create_date
+	return product, nil
 }

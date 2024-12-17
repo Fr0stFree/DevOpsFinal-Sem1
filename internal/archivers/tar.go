@@ -1,4 +1,4 @@
-package utils
+package archivers
 
 import (
 	"archive/tar"
@@ -8,7 +8,13 @@ import (
 	"path/filepath"
 )
 
-func UntarFile(r io.Reader) (io.ReadCloser, error) {
+type tarArchiver struct{}
+
+func (t *tarArchiver) Archive(w io.Writer, fileName string) (io.WriteCloser, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (t *tarArchiver) Extract(r io.Reader) (io.ReadCloser, error) {
 	data, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
