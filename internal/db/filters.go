@@ -15,7 +15,7 @@ type ProductsFilter struct {
 	MaxCreateDate time.Time
 }
 
-func (p ProductsFilter) String() string {
+func (p ProductsFilter) ToSQLStmt() string {
 	conditions := make([]string, 0)
 	if p.MinPrice != 0 {
 		conditions = append(conditions, fmt.Sprintf("price >= %f", p.MinPrice))

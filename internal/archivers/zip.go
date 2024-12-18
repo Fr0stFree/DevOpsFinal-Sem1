@@ -33,7 +33,6 @@ func (z *zipArchiver) Extract(r io.Reader) (io.ReadCloser, error) {
 	return nil, errors.New("file not found in the zip archive")
 }
 
-
 func (z *zipArchiver) Archive(w io.Writer, fileName string) (io.WriteCloser, error) {
 	zipWriter := zip.NewWriter(w)
 	file, err := zipWriter.Create(fileName)

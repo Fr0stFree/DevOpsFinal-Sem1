@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"time"
 
-	"project_sem/internal/db"
 	"project_sem/internal/config"
+	"project_sem/internal/db"
 )
 
 func SerializeProduct(prices []db.Product) (*bytes.Buffer, error) {
@@ -27,8 +27,7 @@ func SerializeProduct(prices []db.Product) (*bytes.Buffer, error) {
 			fmt.Sprintf("%.2f", price.Price),
 			price.CreateDate.Format(config.DATE_FORMAT),
 		}
-		err := csvWriter.Write(record)
-		if err != nil {
+		if err := csvWriter.Write(record); err != nil {
 			return nil, err
 		}
 	}

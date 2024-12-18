@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"time"
 
+	"project_sem/internal/archivers"
 	"project_sem/internal/config"
 	"project_sem/internal/db"
 	"project_sem/internal/serializers"
-	"project_sem/internal/archivers"
 )
 
 func GetProducts(repo db.Repositorier) http.HandlerFunc {
@@ -19,38 +19,43 @@ func GetProducts(repo db.Repositorier) http.HandlerFunc {
 	const csvFileName = "data.csv"
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		params, err := buildProductsFilter(r)
+		filter, err := buildProductsFilter(r)
 		if err != nil {
 			log.Printf("failed to build filter params: %v\n", err)
 			http.Error(w, errorResponseBody, http.StatusBadRequest)
 			return
 		}
-		products, err := repo.GetProducts(params)
+
+		products, err := repo.GetProducts(filter)
 		if err != nil {
-			log.Printf("failed to load prices: %v\n", err)
+			log.Printf("failed to load products: %v\n", err)
 			http.Error(w, errorResponseBody, http.StatusInternalServerError)
 			return
 		}
-		serializedPrices, err := serializers.SerializeProduct(products)
+
+		serializedProducts, err := serializers.SerializeProduct(products)
 		if err != nil {
-			log.Printf("failed to serialize prices: %v\n", err)
+			log.Printf("failed to serialize products: %v\n", err)
 			http.Error(w, errorResponseBody, http.StatusInternalServerError)
 			return
 		}
+
 		archiver := archivers.New(archivers.ZipFmt)
 		archive, err := archiver.Archive(w, csvFileName)
 		if err != nil {
-			log.Printf("failed to archive prices: %v\n", err)
+			log.Printf("failed to archive products: %v\n", err)
 			http.Error(w, errorResponseBody, http.StatusInternalServerError)
 			return
 		}
+
 		defer archive.Close()
-		_, err = archive.Write(serializedPrices.Bytes())
+		_, err = archive.Write(serializedProducts.Bytes())
 		if err != nil {
-			log.Printf("failed to write prices to archive: %v\n", err)
+			log.Printf("failed to archive products: %v\n", err)
 			http.Error(w, errorResponseBody, http.StatusInternalServerError)
 			return
 		}
+
 		w.Header().Set("Content-Type", successContentType)
 		w.Header().Set("Content-Disposition", sucessContentDisposition)
 	}

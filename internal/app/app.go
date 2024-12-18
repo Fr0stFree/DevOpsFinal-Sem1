@@ -49,7 +49,7 @@ func (a *app) Run() {
 			log.Fatalf("server has failed with %s", err)
 		}
 	}()
-	
+
 	<-quit
 	log.Println("shutting down server...")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

@@ -5,9 +5,9 @@ import (
 	"log"
 	"net/http"
 
+	"project_sem/internal/archivers"
 	"project_sem/internal/db"
 	"project_sem/internal/serializers"
-	"project_sem/internal/archivers"
 )
 
 type PriceStats struct {
@@ -49,9 +49,8 @@ func CreateProducts(repo db.Repositorier) http.HandlerFunc {
 			return
 		}
 		stats.TotalCount = totalCount
-		
+
 		transaction, err := repo.Begin()
-		defer transaction.Rollback()
 		for _, product := range products {
 			err = repo.CreateProduct(product)
 			if err == nil {
@@ -61,7 +60,8 @@ func CreateProducts(repo db.Repositorier) http.HandlerFunc {
 			if db.IsDuplicateError(err) {
 				stats.DuplicateCount++
 				continue
-			} 
+			}
+			transaction.Rollback()
 			log.Printf("failed to save product: %v\n", err)
 			http.Error(w, errorResponseBody, http.StatusInternalServerError)
 			return
@@ -86,4 +86,3 @@ func CreateProducts(repo db.Repositorier) http.HandlerFunc {
 		json.NewEncoder(w).Encode(stats)
 	}
 }
-

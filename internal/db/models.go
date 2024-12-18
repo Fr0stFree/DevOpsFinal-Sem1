@@ -5,7 +5,6 @@ import (
 	"time"
 )
 
-
 type Product struct {
 	ID         int
 	Name       string
