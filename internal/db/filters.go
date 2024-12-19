@@ -24,10 +24,10 @@ func (p ProductsFilter) ToSQLStmt() string {
 		conditions = append(conditions, fmt.Sprintf("price <= %f", p.MaxPrice))
 	}
 	if !p.MinCreateDate.IsZero() {
-		conditions = append(conditions, fmt.Sprintf("create_date >= '%s'", p.MinCreateDate.Format(config.DATE_FORMAT)))
+		conditions = append(conditions, fmt.Sprintf("create_date >= '%s'", p.MinCreateDate.Format(config.DateFormat)))
 	}
 	if !p.MaxCreateDate.IsZero() {
-		conditions = append(conditions, fmt.Sprintf("create_date <= '%s'", p.MaxCreateDate.Format(config.DATE_FORMAT)))
+		conditions = append(conditions, fmt.Sprintf("create_date <= '%s'", p.MaxCreateDate.Format(config.DateFormat)))
 	}
 	if len(conditions) != 0 {
 		return fmt.Sprintf("WHERE %s", strings.Join(conditions, " AND "))

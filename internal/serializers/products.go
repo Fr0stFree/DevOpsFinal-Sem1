@@ -25,7 +25,7 @@ func SerializeProduct(prices []db.Product) (*bytes.Buffer, error) {
 			price.Name,
 			price.Category,
 			fmt.Sprintf("%.2f", price.Price),
-			price.CreateDate.Format(config.DATE_FORMAT),
+			price.CreateDate.Format(config.DateFormat),
 		}
 		if err := csvWriter.Write(record); err != nil {
 			return nil, err
@@ -75,7 +75,7 @@ func buildProductFromRecord(record []string) (db.Product, error) {
 		return db.Product{}, fmt.Errorf("failed to convert price to float %v", err)
 	}
 	product.Price = price
-	create_date, err := time.Parse(config.DATE_FORMAT, record[4])
+	create_date, err := time.Parse(config.DateFormat, record[4])
 	if err != nil {
 		return db.Product{}, fmt.Errorf("failed to convert creation date %v", err)
 	}

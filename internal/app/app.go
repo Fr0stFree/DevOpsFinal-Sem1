@@ -15,15 +15,11 @@ import (
 	"project_sem/internal/db"
 )
 
-type Apper interface {
-	Run()
-}
-
-type app struct {
+type App struct {
 	server *http.Server
 }
 
-func New(config config.Config) Apper {
+func New(config config.Config) *App {
 	repo, err := db.NewRepository(config.DB)
 	if err != nil {
 		log.Fatalf("failed to create repository with error %s", err)
@@ -35,10 +31,10 @@ func New(config config.Config) Apper {
 		ReadTimeout:  config.Server.ReadTimeout,
 		WriteTimeout: config.Server.WriteTimeout,
 	}
-	return &app{server}
+	return &App{server}
 }
 
-func (a *app) Run() {
+func (a *App) Run() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 

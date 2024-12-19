@@ -66,7 +66,7 @@ func buildProductsFilter(r *http.Request) (db.ProductsFilter, error) {
 
 	minCreateDate := r.URL.Query().Get("start")
 	if minCreateDate != "" {
-		minDate, err := time.Parse(config.DATE_FORMAT, minCreateDate)
+		minDate, err := time.Parse(config.DateFormat, minCreateDate)
 		if err != nil {
 			return params, err
 		}
@@ -75,7 +75,7 @@ func buildProductsFilter(r *http.Request) (db.ProductsFilter, error) {
 
 	maxCreateDate := r.URL.Query().Get("end")
 	if maxCreateDate != "" {
-		maxDate, err := time.Parse(config.DATE_FORMAT, maxCreateDate)
+		maxDate, err := time.Parse(config.DateFormat, maxCreateDate)
 		if err != nil {
 			return params, err
 		}

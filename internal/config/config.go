@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-const DATE_FORMAT = "2006-01-02"
+const DateFormat = "2006-01-02"
 
 type ServerConfig struct {
 	Port         int           `yaml:"port"`

@@ -29,7 +29,7 @@ func (r *repositoriy) GetProducts(filter ProductsFilter) ([]Product, error) {
 }
 
 func (r *repositoriy) CreateProduct(product Product) error {
-	statement := fmt.Sprintf("INSERT INTO prices (id, name, category, price, create_date) VALUES (%d, '%s', '%s', %f, '%s')", product.ID, product.Name, product.Category, product.Price, product.CreateDate.Format(config.DATE_FORMAT))
+	statement := fmt.Sprintf("INSERT INTO prices (id, name, category, price, create_date) VALUES (%d, '%s', '%s', %f, '%s')", product.ID, product.Name, product.Category, product.Price, product.CreateDate.Format(config.DateFormat))
 	_, err := r.db.Exec(statement)
 	if err != nil {
 		return err
